@@ -1295,7 +1295,6 @@
             if (isRecording) {
                 recognition.stop();
             } else {
-                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
                 recognition.start();
             }
         }
@@ -1306,36 +1305,6 @@
             if(micBtn) micBtn.classList.remove('listening');
             const input = document.getElementById('chatInput');
             if(input && !input.value) input.placeholder = "Ask Astra about your cosmic path...";
-        }
-
-        // Initialize Text-to-Speech
-        function speakText(text) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                // Remove emojis for cleaner speech output
-                const cleanText = text.replace(/[\u1000-\uFFFF]/g, '').trim(); 
-                const utterance = new SpeechSynthesisUtterance(cleanText);
-                
-                // Attempt to find the specific Google Hindi voice or fallback to hi-IN
-                const voices = window.speechSynthesis.getVoices();
-                const hindiVoice = voices.find(voice => voice.name === 'Google हिन्दी' || voice.lang === 'hi-IN');
-                
-                if (hindiVoice) {
-                    utterance.voice = hindiVoice;
-                }
-                utterance.lang = 'hi-IN'; // Set language code explicitly
-                
-                utterance.pitch = 0.85; // Slightly lower pitch for a mystical feel
-                utterance.rate = 0.95;  // Slightly slower pacing
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-        
-        // Ensure voices are loaded early in some browsers
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = function() {
-                window.speechSynthesis.getVoices();
-            };
         }
         // --- END VOICE SUPPORT LOGIC ---
 
@@ -1547,7 +1516,6 @@ Remember: ONE SHORT SENTENCE only. No filler. Start immediately with the astrolo
             // Add welcome message
             const welcomeMsg = getWelcomeMessage();
             addAIMessage(welcomeMsg);
-            speakText(welcomeMsg); // Speak welcome message
         }
 
         function getWelcomeMessage() {
@@ -1811,14 +1779,12 @@ ${userProfile.lifeFocus ? `- Current Life Focus: ${userProfile.lifeFocus}` : ''}
                 }
                 
                 addAIMessage(finalAiResponse);
-                speakText(finalAiResponse); // Speak the AI response
                 
             } catch (error) {
                 console.error('AI Error:', error);
                 removeTypingIndicator();
                 const errorMsg = 'The cosmic channels are temporarily unclear—please rephrase your inquiry.';
                 addAIMessage(errorMsg);
-                speakText(errorMsg);
             }
             
             // Re-enable input
