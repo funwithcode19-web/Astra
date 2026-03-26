@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astra - Astrological AI Oracle</title>
+    <script src="https://js.puter.com/v2/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-purple: #6b21a8;
+            --secondary-purple: #9333ea;
+            --accent-gold: #fbbf24;
+            --deep-space: #0f0a1a;
+            --cosmic-blue: #1e1b4b;
+            --nebula-pink: #be185d;
+            --star-white: #fef3c7;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--deep-space);
+            min-height: 100vh;
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+
+        /* Animated Stars Background */
+        .stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--duration) ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .shooting-star {
+            position: absolute;
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-gold), transparent);
+            animation: shoot 3s linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes shoot {
+            0% { transform: translateX(-100px) translateY(0); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateX(calc(100vw + 100px)) translateY(100px); opacity: 0; }
+        }
+
+        /* Main Container */
+        .main-container {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px var(--accent-gold);
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-gold), var(--secondary-purple), var(--nebula-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-style: italic;
+        }
+
+        /* Zodiac Ring */
+        .zodiac-ring {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .zodiac-symbol {
+            font-size: 1.5rem;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .zodiac-symbol:hover {
+            opacity: 1;
+            transform: scale(1.3);
+            text-shadow: 0 0 20px var(--accent-gold);
+        }
+
+        /* Progress Steps */
+        .progress-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-circle {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: 2px solid var(--text-muted);
+            background: transparent;
+            color: var(--text-muted);
+        }
+
+        .step-circle.active {
+            border-color: var(--accent-gold);
+            background: var(--accent-gold);
+            color: var(--deep-space);
+            box-shadow: 0 0 20px var(--accent-gold);
+        }
+
+        .step-circle.completed {
+            border-color: var(--secondary-purple);
+            background: var(--secondary-purple);
+            color: white;
+        }
+
+        .step-line {
+            width: 60px;
+            height: 2px;
+            background: var(--text-muted);
+            transition: background 0.3s ease;
+        }
+
+        .step-line.active {
+            background: var(--accent-gold);
+        }
+
+        /* Cards */
+        .card {
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.8), rgba(15, 10, 26, 0.9));
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: var(--accent-gold);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title .icon {
+            font-size: 1.8rem;
+        }
+
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-light);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-label .required {
+            color: var(--nebula-pink);
+        }
+
+        .form-label .hint {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-left: 5px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid rgba(147, 51, 234, 0.3);
+            border-radius: 12px;
+            background: rgba(15, 10, 26, 0.6);
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+        }
+
+        .form-select option {
+            background: var(--cosmic-blue);
+            color: var(--text-light);
+        }
+
+        /* Radio Group */
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .radio-option input {
+            display: none;
+        }
+
+        .radio-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid rgba(147, 51, 234, 0.3);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(15, 10, 26, 0.4);
+        }
+
+        .radio-option input:checked + label {
+            border-color: var(--accent-gold);
+            background: rgba(251, 191, 36, 0.1);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+        }
+
+        .radio-option label:hover {
+            border-color: var(--secondary-purple);
+        }
+
+        .radio-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .radio-text {
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Checkbox Group */
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            border: 2px solid rgba(147, 51, 234, 0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(15, 10, 26, 0.4);
+        }
+
+        .checkbox-option:hover {
+            border-color: var(--secondary-purple);
+        }
+
+        .checkbox-option.selected {
+            border-color: var(--accent-gold);
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        .checkbox-option input {
+            display: none;
+        }
+
+        .checkmark {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--text-muted);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-option.selected .checkmark {
+            background: var(--accent-gold);
+            border-color: var(--accent-gold);
+        }
+
+        .checkmark::after {
+            content: '✓';
+            color: var(--deep-space);
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .checkbox-option.selected .checkmark::after {
+            opacity: 1;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-gold), #f59e0b);
+            color: var(--deep-space);
+            box-shadow: 0 5px 20px rgba(251, 191, 36, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(251, 191, 36, 0.5);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-light);
+            border: 2px solid var(--secondary-purple);
+        }
+
+        .btn-secondary:hover {
+            background: var(--secondary-purple);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        /* Hidden Sections */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Chat Interface */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 300px);
+            min-height: 500px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: rgba(147, 51, 234, 0.1);
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--secondary-purple);
+            border-radius: 3px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            animation: messageIn 0.3s ease;
+        }
+
+        @keyframes messageIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--secondary-purple), var(--primary-purple));
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.ai {
+            align-self: flex-start;
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.9), rgba(15, 10, 26, 0.9));
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .message.ai .message-header {
+            color: var(--accent-gold);
+        }
+
+        .message-content {
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 15px 20px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-gold);
+            border-radius: 50%;
+            animation: typingBounce 1.4s ease-in-out infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        /* Chat Input */
+        .chat-input-container {
+            padding: 20px;
+            border-top: 1px solid rgba(147, 51, 234, 0.3);
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid rgba(147, 51, 234, 0.3);
+            border-radius: 25px;
+            background: rgba(15, 10, 26, 0.6);
+            color: var(--text-light);
+            font-size: 1rem;
+            resize: none;
+            min-height: 50px;
+            max-height: 150px;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+        }
+
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-gold), #f59e0b);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(251, 191, 36, 0.5);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .send-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--deep-space);
+        }
+
+        /* Voice Controls */
+        .mic-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: transparent;
+            border: 2px solid var(--accent-gold);
+            color: var(--accent-gold);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .mic-btn:hover {
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        .mic-btn.listening {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            color: #ef4444;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* User Profile Summary */
+        .profile-summary {
+            background: rgba(30, 27, 75, 0.5);
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(147, 51, 234, 0.2);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .profile-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent-gold);
+        }
+
+        .edit-profile-btn {
+            background: transparent;
+            border: 1px solid var(--text-muted);
+            color: var(--text-muted);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .edit-profile-btn:hover {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        .profile-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .profile-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+
+        .profile-item .icon {
+            color: var(--secondary-purple);
+        }
+
+        .profile-item .value {
+            color: var(--text-light);
+        }
+
+        /* Quick Questions */
+        .quick-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .quick-question {
+            background: rgba(147, 51, 234, 0.2);
+            border: 1px solid rgba(147, 51, 234, 0.4);
+            color: var(--text-light);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quick-question:hover {
+            background: var(--secondary-purple);
+            border-color: var(--secondary-purple);
+        }
+
+        /* System Info Box */
+        .system-info {
+            background: linear-gradient(135deg, rgba(190, 24, 93, 0.2), rgba(147, 51, 234, 0.2));
+            border: 1px solid rgba(190, 24, 93, 0.4);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .system-info-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-gold);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .system-info-content {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Disclaimer */
+        .disclaimer {
+            text-align: center;
+            padding: 15px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border-top: 1px solid rgba(147, 51, 234, 0.2);
+            margin-top: 10px;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(251, 191, 36, 0.3);
+            border-top-color: var(--accent-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 1.8rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .radio-group {
+                flex-direction: column;
+            }
+
+            .radio-option {
+                min-width: 100%;
+            }
+
+            .chat-messages {
+                padding: 15px;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .profile-details {
+                grid-template-columns: 1fr;
+            }
+
+            .step-line {
+                width: 30px;
+            }
+        }
+
+        /* Validation Error */
+        .error-message {
+            color: #ef4444;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .form-input.error, .form-select.error {
+            border-color: #ef4444;
+        }
+
+        .form-input.error + .error-message,
+        .form-select.error + .error-message {
+            display: block;
+        }
+
+        /* Celestial Decorations */
+        .celestial-decoration {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .moon {
+            top: 10%;
+            right: 5%;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle at 30% 30%, #fef3c7, #fbbf24);
+            border-radius: 50%;
+            box-shadow: 0 0 60px rgba(251, 191, 36, 0.4);
+            opacity: 0.6;
+        }
+
+        .planet {
+            bottom: 15%;
+            left: 3%;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle at 30% 30%, #9333ea, #6b21a8);
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(147, 51, 234, 0.4);
+            opacity: 0.5;
+        }
+
+        .ring {
+            position: absolute;
+            width: 90px;
+            height: 20px;
+            border: 2px solid rgba(147, 51, 234, 0.5);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-20deg);
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Stars Background -->
+    <div class="stars-container" id="starsContainer"></div>
+    
+    <!-- Celestial Decorations -->
+    <div class="celestial-decoration moon"></div>
+    <div class="celestial-decoration planet">
+        <div class="ring"></div>
+    </div>
+
+    <div class="main-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">✧</div>
+            <h1 class="title">ASTRA</h1>
+            <p class="subtitle">Your Celestial AI Oracle</p>
+            
+            <div class="zodiac-ring">
+                <span class="zodiac-symbol" title="Aries">♈</span>
+                <span class="zodiac-symbol" title="Taurus">♉</span>
+                <span class="zodiac-symbol" title="Gemini">♊</span>
+                <span class="zodiac-symbol" title="Cancer">♋</span>
+                <span class="zodiac-symbol" title="Leo">♌</span>
+                <span class="zodiac-symbol" title="Virgo">♍</span>
+                <span class="zodiac-symbol" title="Libra">♎</span>
+                <span class="zodiac-symbol" title="Scorpio">♏</span>
+                <span class="zodiac-symbol" title="Sagittarius">♐</span>
+                <span class="zodiac-symbol" title="Capricorn">♑</span>
+                <span class="zodiac-symbol" title="Aquarius">♒</span>
+                <span class="zodiac-symbol" title="Pisces">♓</span>
+            </div>
+        </header>
+
+        <!-- Progress Steps -->
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-step">
+                <div class="step-circle active" id="step1">1</div>
+            </div>
+            <div class="step-line" id="line1"></div>
+            <div class="progress-step">
+                <div class="step-circle" id="step2">2</div>
+            </div>
+            <div class="step-line" id="line2"></div>
+            <div class="progress-step">
+                <div class="step-circle" id="step3">3</div>
+            </div>
+        </div>
+
+        <!-- Section 1: Basic Information -->
+        <section class="section active" id="section1">
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="icon">👤</span>
+                    Personal Foundation
+                </h2>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Full Name <span class="required">*</span>
+                            <span class="hint">Your birth name is preferred</span>
+                        </label>
+                        <input type="text" class="form-input" id="fullName" placeholder="Enter your full name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            Email Address <span class="required">*</span>
+                            <span class="hint">For session recovery</span>
+                        </label>
+                        <input type="email" class="form-input" id="email" placeholder="your@email.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            Gender Identity
+                            <span class="hint">Optional</span>
+                        </label>
+                        <select class="form-select" id="gender">
+                            <option value="">Select gender (optional)</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="non-binary">Non-binary</option>
+                            <option value="prefer-not">Prefer not to say</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            Preferred Name
+                            <span class="hint">What should Astra call you?</span>
+                        </label>
+                        <input type="text" class="form-input" id="preferredName" placeholder="Nickname or preferred name">
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="nextSection(2)">
+                        Continue to Birth Details →
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Birth Details -->
+        <section class="section" id="section2">
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="icon">🌟</span>
+                    Birth Configuration
+                </h2>
+                
+                <div class="system-info">
+                    <div class="system-info-title">
+                        <span>ℹ️</span>
+                        Why Birth Details Matter
+                    </div>
+                    <div class="system-info-content">
+                        Your exact birth date, time, and location determine your unique astrological blueprint. The position of celestial bodies at your birth moment shapes your personality, life path, and cosmic influences according to your chosen astrological system.
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Date of Birth <span class="required">*</span>
+                        </label>
+                        <input type="date" class="form-input" id="birthDate" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            Time of Birth <span class="required">*</span>
+                            <span class="hint">Exact time improves accuracy</span>
+                        </label>
+                        <input type="time" class="form-input" id="birthTime" required>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label">
+                            Birth Location <span class="required">*</span>
+                            <span class="hint">City and country for precise coordinates</span>
+                        </label>
+                        <input type="text" class="form-input" id="birthLocation" placeholder="e.g., Mumbai, India or New York, USA" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            Birth Time Accuracy
+                        </label>
+                        <select class="form-select" id="timeAccuracy">
+                            <option value="exact">Exact - From birth certificate</option>
+                            <option value="approximate">Approximate - Family memory</option>
+                            <option value="unknown">Unknown - Need assistance</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            Know your Ascendant/Rising?
+                            <span class="hint">Optional</span>
+                        </label>
+                        <input type="text" class="form-input" id="ascendant" placeholder="e.g., Leo Rising">
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="prevSection(1)">
+                        ← Back
+                    </button>
+                    <button class="btn btn-primary" onclick="nextSection(3)">
+                        Continue to Preferences →
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Astrological Preferences -->
+        <section class="section" id="section3">
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="icon">🔭</span>
+                    Astrological System & Focus
+                </h2>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        Preferred Astrological System <span class="required">*</span>
+                    </label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="system" id="western" value="western" checked>
+                            <label for="western">
+                                <span class="radio-icon">☀️</span>
+                                <span class="radio-text">
+                                    <strong>Western</strong><br>
+                                    <small>Tropical • Sun Sign • Psychological</small>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="system" id="vedic" value="vedic">
+                            <label for="vedic">
+                                <span class="radio-icon">🌙</span>
+                                <span class="radio-text">
+                                    <strong>Vedic (Jyotish)</strong><br>
+                                    <small>Sidereal • Moon Sign • Karmic</small>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="system" id="chinese" value="chinese">
+                            <label for="chinese">
+                                <span class="radio-icon">🐲</span>
+                                <span class="radio-text">
+                                    <strong>Chinese</strong><br>
+                                    <small>Lunar • BaZi • Elemental</small>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 25px;">
+                    <label class="form-label">
+                        Areas of Interest <span class="hint">(Select all that apply)</span>
+                    </label>
+                    <div class="checkbox-group" id="interestsGroup">
+                        <div class="checkbox-option" onclick="toggleCheckbox(this)">
+                            <input type="checkbox" name="interest" value="career">
+                            <span class="checkmark"></span>
+                            <span>💼 Career</span>
+                        </div>
+                        <div class="checkbox-option" onclick="toggleCheckbox(this)">
+                            <input type="checkbox" name="interest" value="love">
+                            <span class="checkmark"></span>
+                            <span>💕 Love & Relationships</span>
+                        </div>
+                        <div class="checkbox-option" onclick="toggleCheckbox(this)">
+                            <input type="checkbox" name="interest" value="finance">
+                            <span class="checkmark"></span>
+                            <span>💰 Finance</span>
+                        </div>
+                        <div class="checkbox-option" onclick="toggleCheckbox(this)">
+                            <input type="checkbox" name="interest" value="health">
+                            <span class="checkmark"></span>
+                            <span>🏥 Health & Wellness</span>
+                        </div>
+                        <div class="checkbox-option" onclick="toggleCheckbox(this)">
+                            <input type="checkbox" name="interest" value="spiritual">
+                            <span class="checkmark"></span>
+                            <span>🧘 Spiritual Growth</span>
+                        </div>
+                        <div class="checkbox-option" onclick="toggleCheckbox(this)">
+                            <input type="checkbox" name="interest" value="family">
+                            <span class="checkmark"></span>
+                            <span>👨‍👩‍👧 Family</span>
+                        </div>
+                        <div class="checkbox-option" onclick="toggleCheckbox(this)">
+                            <input type="checkbox" name="interest" value="education">
+                            <span class="checkmark"></span>
+                            <span>📚 Education</span>
+                        </div>
+                        <div class="checkbox-option" onclick="toggleCheckbox(this)">
+                            <input type="checkbox" name="interest" value="travel">
+                            <span class="checkmark"></span>
+                            <span>✈️ Travel</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 25px;">
+                    <label class="form-label">
+                        Current Life Focus <span class="hint">What's most important to you right now?</span>
+                    </label>
+                    <textarea class="form-input" id="lifeFocus" rows="3" placeholder="e.g., I'm going through a career transition and seeking guidance on my next steps..."></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="prevSection(2)">
+                        ← Back
+                    </button>
+                    <button class="btn btn-primary" id="startChatBtn" onclick="startChat()">
+                        ✨ Begin Your Reading
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chat Section -->
+        <section class="section" id="chatSection">
+            <!-- Profile Summary -->
+            <div class="profile-summary" id="profileSummary">
+                <div class="profile-header">
+                    <span class="profile-name" id="profileName">User</span>
+                    <button class="edit-profile-btn" onclick="editProfile()">Edit Profile</button>
+                </div>
+                <div class="profile-details" id="profileDetails"></div>
+            </div>
+
+            <!-- Chat Card -->
+            <div class="card" style="padding: 0; overflow: hidden;">
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Messages will be added here -->
+                    </div>
+                    
+                    <!-- Quick Questions -->
+                    <div style="padding: 0 20px;">
+                        <div class="quick-questions" id="quickQuestions">
+                            <button class="quick-question" onclick="askQuickQuestion('What does my sun sign reveal about my personality?')">☀️ Sun Sign Meaning</button>
+                            <button class="quick-question" onclick="askQuickQuestion('What opportunities are coming my way?')">🔮 Future Insights</button>
+                            <button class="quick-question" onclick="askQuickQuestion('What should I focus on this month?')">📅 Monthly Focus</button>
+                            <button class="quick-question" onclick="askQuickQuestion('How can I improve my relationships?')">💕 Love Guidance</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Input -->
+                    <div class="chat-input-container">
+                        <div class="chat-input-wrapper">
+                            <button class="mic-btn" id="micBtn" onclick="toggleRecording()" type="button" title="Voice Input">
+                                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                                    <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
+                                </svg>
+                            </button>
+                            <textarea class="chat-input" id="chatInput" placeholder="Ask Astra about your cosmic path..." rows="1" onkeydown="handleKeyDown(event)"></textarea>
+                            <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="disclaimer">
+                ⚠️ Astra provides astrological interpretations for guidance and self-reflection only. 
+                This is not professional medical, legal, or financial advice. Always consult qualified professionals for important life decisions.
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // ==========================================
+        // ASTRA - Astrological AI Oracle
+        // System Prompt Implementation
+        // ==========================================
+
+        // User Profile Data
+        let userProfile = {
+            fullName: '',
+            email: '',
+            gender: '',
+            preferredName: '',
+            birthDate: '',
+            birthTime: '',
+            birthLocation: '',
+            timeAccuracy: '',
+            ascendant: '',
+            system: 'western',
+            interests: [],
+            lifeFocus: ''
+        };
+
+        // Chat History
+        let chatHistory = [];
+
+        // --- VOICE SUPPORT LOGIC ---
+        let recognition;
+        let isRecording = false;
+
+        // Initialize Speech Recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+
+            recognition.onstart = function() {
+                isRecording = true;
+                document.getElementById('micBtn').classList.add('listening');
+                document.getElementById('chatInput').placeholder = "Listening to your cosmic query...";
+            };
+
+            recognition.onresult = function(event) {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+                
+                const input = document.getElementById('chatInput');
+                if (finalTranscript) {
+                    input.value = finalTranscript;
+                    sendMessage(); // Auto-send when speech is finalized
+                } else {
+                    input.value = interimTranscript;
+                }
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error', event.error);
+                stopRecording();
+            };
+
+            recognition.onend = function() {
+                stopRecording();
+            };
+        }
+
+        function toggleRecording() {
+            if (!recognition) {
+                alert('Voice input is not supported in your browser.');
+                return;
+            }
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+                recognition.start();
+            }
+        }
+
+        function stopRecording() {
+            isRecording = false;
+            const micBtn = document.getElementById('micBtn');
+            if(micBtn) micBtn.classList.remove('listening');
+            const input = document.getElementById('chatInput');
+            if(input && !input.value) input.placeholder = "Ask Astra about your cosmic path...";
+        }
+
+        // Initialize Text-to-Speech
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                // Remove emojis for cleaner speech output
+                const cleanText = text.replace(/[\u1000-\uFFFF]/g, '').trim(); 
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                utterance.pitch = 0.85; // Slightly lower pitch for a mystical feel
+                utterance.rate = 0.95;  // Slightly slower pacing
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+        // --- END VOICE SUPPORT LOGIC ---
+
+        // System Prompt for Astra (Based on Research Paper)
+        const ASTRA_SYSTEM_PROMPT = `You are "Astra," a highly advanced, strictly focused Astrological AI. Your sole function is to provide astrological interpretations. You possess deep, expert-level knowledge of Western (Tropical/Psychological), Vedic (Sidereal/Karmic), and Chinese (Lunar/BaZi) astrological systems. You must analyze user queries using the appropriate astrological framework based on their input context. You are impartial, professional, and deeply analytical. You are not a conversational chatbot; you are a highly concise astrological oracle.
+
+ABSOLUTE LENGTH AND FORMATTING CONSTRAINTS:
+- Every response MUST be exactly ONE single sentence.
+- Every response MUST be exceptionally short and concise - aim for 10-20 words maximum.
+- NEVER use conversational filler, pleasantries, introductions, or sign-offs.
+- NEVER say "Hello," "Here is your reading," "Based on the stars," or "According to astrology."
+- Think of your output as a strict, dense, and profound aphorism or a newspaper headline.
+- Start immediately with the core astrological observation.
+
+ETHICAL AND REGULATORY GUARDRAILS (ISAR/NCGR Standards):
+- NEVER predict physical death, terminal illness, tragedy, accidents, or confirm the existence of curses.
+- Frame challenging transits as opportunities for psychological growth.
+- Respect human free will - NEVER present astrological events as inescapable fate.
+- Use words like "suggests," "indicates," or "presents an opportunity."
+- You are strictly an educational tool - NEVER provide tailored Medical, Legal, or Financial advice.
+
+BEHAVIORAL PROTOCOLS FOR OUT-OF-BOUNDS QUERIES:
+- If asked a Medical, Legal, or Financial question: "I provide astrological perspectives only, not professional advice."
+- If asked a non-astrological question: "My expertise is strictly limited to astrological interpretation."
+- If asked for extreme/fatalistic predictions: "Astrology illuminates psychological paths, but never dictates finite endings."
+
+FEW-SHOT EXAMPLES (Follow this exact level of brevity):
+User: "What does my Venus in Scorpio mean for my love life?"
+AI: Intense emotional transformations define your deepest romantic connections.
+
+User: "I am a Wood Dragon in Chinese astrology, what is my career focus?"
+AI: Cultivate expansive leadership roles requiring highly innovative growth.
+
+User: "Saturn return in Pisces is happening to me. Is it bad?"
+AI: This transit demands profound spiritual maturity and the dissolution of old boundaries.
+
+User: "Should I invest all my money in crypto right now?"
+AI: I provide astrological perspectives only, not professional advice.
+
+User: "What does the future hold for my career?"
+AI: Upcoming Jupiter transits suggest significant opportunities for professional expansion.
+
+USER CONTEXT (Use this for personalized readings):
+{{USER_CONTEXT}}
+
+Remember: ONE SHORT SENTENCE only. No filler. Start immediately with the astrological insight.`;
+
+        // Create animated stars
+        function createStars() {
+            const container = document.getElementById('starsContainer');
+            const starCount = 150;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 1 + 'px';
+                star.style.height = star.style.width;
+                star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+                star.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(star);
+            }
+
+            // Add shooting stars
+            for (let i = 0; i < 3; i++) {
+                const shootingStar = document.createElement('div');
+                shootingStar.className = 'shooting-star';
+                shootingStar.style.top = Math.random() * 50 + '%';
+                shootingStar.style.animationDelay = (Math.random() * 10 + i * 5) + 's';
+                container.appendChild(shootingStar);
+            }
+        }
+
+        // Navigation functions
+        function nextSection(sectionNum) {
+            // Validate current section
+            if (!validateSection(sectionNum - 1)) return;
+            
+            // Save data
+            saveCurrentSectionData(sectionNum - 1);
+            
+            // Update progress
+            updateProgress(sectionNum);
+            
+            // Show new section
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`section${sectionNum}`).classList.add('active');
+        }
+
+        function prevSection(sectionNum) {
+            updateProgress(sectionNum);
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`section${sectionNum}`).classList.add('active');
+        }
+
+        function updateProgress(currentStep) {
+            for (let i = 1; i <= 3; i++) {
+                const step = document.getElementById(`step${i}`);
+                const line = document.getElementById(`line${i}`);
+                
+                if (i < currentStep) {
+                    step.classList.add('completed');
+                    step.classList.remove('active');
+                    if (line) line.classList.add('active');
+                } else if (i === currentStep) {
+                    step.classList.add('active');
+                    step.classList.remove('completed');
+                } else {
+                    step.classList.remove('active', 'completed');
+                    if (line) line.classList.remove('active');
+                }
+            }
+        }
+
+        // Validation
+        function validateSection(sectionNum) {
+            let isValid = true;
+            
+            if (sectionNum === 1) {
+                const fullName = document.getElementById('fullName');
+                const email = document.getElementById('email');
+                
+                if (!fullName.value.trim()) {
+                    fullName.classList.add('error');
+                    isValid = false;
+                } else {
+                    fullName.classList.remove('error');
+                }
+                
+                if (!email.value.trim() || !email.value.includes('@')) {
+                    email.classList.add('error');
+                    isValid = false;
+                } else {
+                    email.classList.remove('error');
+                }
+            }
+            
+            if (sectionNum === 2) {
+                const birthDate = document.getElementById('birthDate');
+                const birthTime = document.getElementById('birthTime');
+                const birthLocation = document.getElementById('birthLocation');
+                
+                if (!birthDate.value) {
+                    birthDate.classList.add('error');
+                    isValid = false;
+                } else {
+                    birthDate.classList.remove('error');
+                }
+                
+                if (!birthTime.value) {
+                    birthTime.classList.add('error');
+                    isValid = false;
+                } else {
+                    birthTime.classList.remove('error');
+                }
+                
+                if (!birthLocation.value.trim()) {
+                    birthLocation.classList.add('error');
+                    isValid = false;
+                } else {
+                    birthLocation.classList.remove('error');
+                }
+            }
+            
+            return isValid;
+        }
+
+        // Save section data
+        function saveCurrentSectionData(sectionNum) {
+            if (sectionNum === 1) {
+                userProfile.fullName = document.getElementById('fullName').value;
+                userProfile.email = document.getElementById('email').value;
+                userProfile.gender = document.getElementById('gender').value;
+                userProfile.preferredName = document.getElementById('preferredName').value || userProfile.fullName.split(' ')[0];
+            }
+            
+            if (sectionNum === 2) {
+                userProfile.birthDate = document.getElementById('birthDate').value;
+                userProfile.birthTime = document.getElementById('birthTime').value;
+                userProfile.birthLocation = document.getElementById('birthLocation').value;
+                userProfile.timeAccuracy = document.getElementById('timeAccuracy').value;
+                userProfile.ascendant = document.getElementById('ascendant').value;
+            }
+        }
+
+        // Toggle checkbox
+        function toggleCheckbox(element) {
+            element.classList.toggle('selected');
+            const checkbox = element.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+        }
+
+        // Start chat
+        function startChat() {
+            // Save final section data
+            userProfile.system = document.querySelector('input[name="system"]:checked').value;
+            userProfile.interests = Array.from(document.querySelectorAll('input[name="interest"]:checked')).map(cb => cb.value);
+            userProfile.lifeFocus = document.getElementById('lifeFocus').value;
+            
+            // Hide progress and show chat
+            document.getElementById('progressContainer').style.display = 'none';
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById('chatSection').classList.add('active');
+            
+            // Update profile summary
+            updateProfileSummary();
+            
+            // Add welcome message
+            const welcomeMsg = getWelcomeMessage();
+            addAIMessage(welcomeMsg);
+            speakText(welcomeMsg); // Speak welcome message
+        }
+
+        function getWelcomeMessage() {
+            const name = userProfile.preferredName || userProfile.fullName.split(' ')[0];
+            const systemInfo = getSystemInfo();
+            
+            const welcomeMessages = {
+                western: `${name}, your cosmic blueprint awaits—share your question and the stars shall illuminate your path.`,
+                vedic: `${name}, your karmic journey begins here—what aspect of your dharma seeks clarification?`,
+                chinese: `${name}, your elemental destiny calls—ask and the cosmic patterns shall reveal themselves.`
+            };
+            
+            return welcomeMessages[userProfile.system] || welcomeMessages.western;
+        }
+
+        function getSystemInfo() {
+            const systems = {
+                western: 'Western (Tropical/Sun-based)',
+                vedic: 'Vedic (Sidereal/Moon-based)',
+                chinese: 'Chinese (Lunar/BaZi)'
+            };
+            return systems[userProfile.system];
+        }
+
+        function updateProfileSummary() {
+            const name = userProfile.preferredName || userProfile.fullName.split(' ')[0];
+            document.getElementById('profileName').textContent = name;
+            
+            // Safely parse date avoiding timezone shifts
+            const [year, month, day] = userProfile.birthDate.split('-');
+            const birthDate = new Date(year, month - 1, day);
+            const formattedDate = birthDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            const systemNames = {
+                western: 'Western (Tropical)',
+                vedic: 'Vedic (Jyotish)',
+                chinese: 'Chinese (BaZi)'
+            };
+            
+            const detailsHTML = `
+                <div class="profile-item">
+                    <span class="icon">🎂</span>
+                    <span class="value">${formattedDate}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="icon">⏰</span>
+                    <span class="value">${userProfile.birthTime}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="icon">📍</span>
+                    <span class="value">${userProfile.birthLocation}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="icon">🔭</span>
+                    <span class="value">${systemNames[userProfile.system]}</span>
+                </div>
+            `;
+            
+            document.getElementById('profileDetails').innerHTML = detailsHTML;
+        }
+
+        // Chat functions
+        function addAIMessage(message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ai';
+            
+            // Escape HTML to prevent injection, but allow basic formatting
+            let safeMessage = message.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <span>✧ Astra</span>
+                </div>
+                <div class="message-content">${safeMessage}</div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addUserMessage(message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            
+            let safeMessage = message.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            
+            messageDiv.innerHTML = `
+                <div class="message-content">${safeMessage}</div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addTypingIndicator() {
+            const chatMessages = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message ai';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) typing.remove();
+        }
+
+        // Generate user context for the system prompt
+        function generateUserContext() {
+            // Safely parse date
+            const [yearStr, monthStr, dayStr] = userProfile.birthDate.split('-');
+            const year = parseInt(yearStr);
+            const month = parseInt(monthStr);
+            const day = parseInt(dayStr);
+            
+            const birthDate = new Date(year, month - 1, day);
+            const formattedDate = birthDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            const systemContext = {
+                western: `
+- Birth Date: ${formattedDate}
+- Birth Time: ${userProfile.birthTime}
+- Birth Location: ${userProfile.birthLocation}
+- Preferred System: Western Tropical Astrology
+- Calculate Sun Sign based on date: ${getWesternSunSign(day, month)}
+${userProfile.ascendant ? `- Known Ascendant: ${userProfile.ascendant}` : ''}
+${userProfile.interests.length > 0 ? `- Areas of Interest: ${userProfile.interests.join(', ')}` : ''}
+${userProfile.lifeFocus ? `- Current Life Focus: ${userProfile.lifeFocus}` : ''}`,
+                
+                vedic: `
+- Birth Date: ${formattedDate}
+- Birth Time: ${userProfile.birthTime}
+- Birth Location: ${userProfile.birthLocation}
+- Preferred System: Vedic (Jyotish) Sidereal Astrology
+- Calculate Moon Sign and Nakshatra
+${userProfile.interests.length > 0 ? `- Areas of Interest: ${userProfile.interests.join(', ')}` : ''}
+${userProfile.lifeFocus ? `- Current Life Focus: ${userProfile.lifeFocus}` : ''}`,
+                
+                chinese: `
+- Birth Year: ${year}
+- Birth Date: ${formattedDate}
+- Birth Time: ${userProfile.birthTime}
+- Preferred System: Chinese BaZi Astrology
+- Chinese Zodiac Animal: ${getChineseZodiac(year)}
+- Element: ${getChineseElement(year)}
+${userProfile.interests.length > 0 ? `- Areas of Interest: ${userProfile.interests.join(', ')}` : ''}
+${userProfile.lifeFocus ? `- Current Life Focus: ${userProfile.lifeFocus}` : ''}`
+            };
+            
+            return systemContext[userProfile.system];
+        }
+
+        // Helper functions for astrological calculations
+        function getWesternSunSign(day, month) {
+            const signs = [
+                { name: 'Capricorn', start: [1, 1], end: [1, 19] },
+                { name: 'Aquarius', start: [1, 20], end: [2, 18] },
+                { name: 'Pisces', start: [2, 19], end: [3, 20] },
+                { name: 'Aries', start: [3, 21], end: [4, 19] },
+                { name: 'Taurus', start: [4, 20], end: [5, 20] },
+                { name: 'Gemini', start: [5, 21], end: [6, 20] },
+                { name: 'Cancer', start: [6, 21], end: [7, 22] },
+                { name: 'Leo', start: [7, 23], end: [8, 22] },
+                { name: 'Virgo', start: [8, 23], end: [9, 22] },
+                { name: 'Libra', start: [9, 23], end: [10, 22] },
+                { name: 'Scorpio', start: [10, 23], end: [11, 21] },
+                { name: 'Sagittarius', start: [11, 22], end: [12, 21] },
+                { name: 'Capricorn', start: [12, 22], end: [12, 31] }
+            ];
+            
+            for (const sign of signs) {
+                const [startMonth, startDay] = sign.start;
+                const [endMonth, endDay] = sign.end;
+                
+                if ((month === startMonth && day >= startDay) || (month === endMonth && day <= endDay)) {
+                    return sign.name;
+                }
+            }
+            return 'Unknown';
+        }
+
+        function getChineseZodiac(year) {
+            const animals = ['Rat', 'Ox', 'Tiger', 'Rabbit', 'Dragon', 'Snake', 'Horse', 'Goat', 'Monkey', 'Rooster', 'Dog', 'Pig'];
+            return animals[(year - 1900) % 12];
+        }
+
+        function getChineseElement(year) {
+            const elements = ['Metal', 'Water', 'Wood', 'Fire', 'Earth'];
+            const elementIndex = Math.floor((year - 1900) / 2) % 5;
+            return elements[elementIndex];
+        }
+
+        // Send message to AI
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Disable input while processing and reset height
+            input.value = '';
+            input.style.height = '50px'; // Reset to original min-height
+            input.disabled = true;
+            document.getElementById('sendBtn').disabled = true;
+            
+            // Add user message
+            addUserMessage(message);
+            
+            // Show typing indicator
+            addTypingIndicator();
+            
+            try {
+                // Prepare the system prompt with user context
+                const userContext = generateUserContext();
+                const systemPrompt = ASTRA_SYSTEM_PROMPT.replace('{{USER_CONTEXT}}', userContext);
+                
+                // Build messages array
+                const messages = [
+                    { role: 'system', content: systemPrompt }
+                ];
+                
+                // Add chat history (last 8 exchanges for context to save tokens)
+                const recentHistory = chatHistory.slice(-8);
+                recentHistory.forEach(msg => {
+                    messages.push(msg);
+                });
+                
+                // Add current message
+                messages.push({ role: 'user', content: message });
+                
+                // Call puter.js AI (Using default model for highest stability)
+                const response = await puter.ai.chat(messages);
+                
+                // Parse response safely
+                let rawResponseText = response?.message?.content || response?.text || String(response);
+                
+                // Store in history
+                chatHistory.push({ role: 'user', content: message });
+                chatHistory.push({ role: 'assistant', content: rawResponseText });
+                
+                // Remove typing indicator
+                removeTypingIndicator();
+                
+                // CLIENT-SIDE FAILSAFE: Force output to be exactly one sentence
+                let finalAiResponse = rawResponseText.replace(/^"|"$/g, '').trim(); // Remove leading/trailing quotes
+                
+                const sentenceMatch = finalAiResponse.match(/^.*?[.!?](?:\s|$)/);
+                if (sentenceMatch) {
+                    finalAiResponse = sentenceMatch[0].trim();
+                } else if (finalAiResponse.length > 150) {
+                    // Fallback if the AI forgets punctuation entirely
+                    finalAiResponse = finalAiResponse.substring(0, 150) + '...';
+                }
+                
+                addAIMessage(finalAiResponse);
+                speakText(finalAiResponse); // Speak the AI response
+                
+            } catch (error) {
+                console.error('AI Error:', error);
+                removeTypingIndicator();
+                const errorMsg = 'The cosmic channels are temporarily unclear—please rephrase your inquiry.';
+                addAIMessage(errorMsg);
+                speakText(errorMsg);
+            }
+            
+            // Re-enable input
+            input.disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+            input.focus();
+        }
+
+        // Quick questions
+        function askQuickQuestion(question) {
+            document.getElementById('chatInput').value = question;
+            sendMessage();
+        }
+
+        // Handle Enter key
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault(); // Prevents a new line from forming
+                sendMessage();
+            }
+        }
+
+        // Edit profile
+        function editProfile() {
+            document.getElementById('progressContainer').style.display = 'flex';
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById('section1').classList.add('active');
+            updateProgress(1);
+            
+            // Pre-fill form data
+            document.getElementById('fullName').value = userProfile.fullName;
+            document.getElementById('email').value = userProfile.email;
+            document.getElementById('gender').value = userProfile.gender;
+            document.getElementById('preferredName').value = userProfile.preferredName;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            createStars();
+            
+            // Auto-resize textarea
+            const textarea = document.getElementById('chatInput');
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+            });
+        });
+    </script>
+</body>
+</html>
