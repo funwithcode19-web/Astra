@@ -1315,10 +1315,27 @@
                 // Remove emojis for cleaner speech output
                 const cleanText = text.replace(/[\u1000-\uFFFF]/g, '').trim(); 
                 const utterance = new SpeechSynthesisUtterance(cleanText);
+                
+                // Attempt to find the specific Google Hindi voice or fallback to hi-IN
+                const voices = window.speechSynthesis.getVoices();
+                const hindiVoice = voices.find(voice => voice.name === 'Google हिन्दी' || voice.lang === 'hi-IN');
+                
+                if (hindiVoice) {
+                    utterance.voice = hindiVoice;
+                }
+                utterance.lang = 'hi-IN'; // Set language code explicitly
+                
                 utterance.pitch = 0.85; // Slightly lower pitch for a mystical feel
                 utterance.rate = 0.95;  // Slightly slower pacing
                 window.speechSynthesis.speak(utterance);
             }
+        }
+        
+        // Ensure voices are loaded early in some browsers
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = function() {
+                window.speechSynthesis.getVoices();
+            };
         }
         // --- END VOICE SUPPORT LOGIC ---
 
